@@ -1,0 +1,160 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the Islandora Video Redirect module.
+ */
+
+const ISLANDORA_VIDEO_REDIRECT_CONTENT_MODEL = 'islandora:videoRedirectCModel';
+const ISLANDORA_VIDEO_REDIRECT_COLLECTION = 'islandora:videoRedirect';
+
+const ISLANDORA_VIDEO_REDIRECT_FORM_NAME = 'Islandora Video Redirect MODS Form';
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_video_redirect_menu() {
+  $items = array();
+
+  $items['admin/islandora/solution_pack_config/video_redirect'] = array(
+    'title' => 'Video Redirect',
+    'descrption' => 'Configuration for rendering videos from external systems.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_video_redirect_admin_form'),
+    'access arguments' => array('administer site configuration'),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_islandora_required_objects().
+ */
+function islandora_video_redirect_islandora_required_objects(IslandoraTuque $connection) {
+  $mod_path = drupal_get_path('module', 'islandora_video_redirect');
+  $repo = $connection->repository;
+
+  $content_model = $repo->constructObject(ISLANDORA_VIDEO_REDIRECT_CONTENT_MODEL);
+  $content_model->label = 'Islandora Video Redirect Content Model';
+  $content_model->models = array('fedora-system:ContentModel-3.0');
+  $datastream = $content_model->constructDatastream('DS-COMPOSITE-MODEL', 'M');
+  $datastream->mimetype = 'application/xml';
+  $datastream->label = 'DS-COMPOSITE-MODEL';
+  $datastream->setContentFromFile("$mod_path/xml/ds_composite_model.xml", FALSE);
+  $content_model->ingestDatastream($datastream);
+
+  $collection = $repo->constructObject(ISLANDORA_VIDEO_REDIRECT_COLLECTION);
+  $collection->label = 'Islandora Video Redirect Collection';
+  $collection->models = array('islandora:collectionCModel');
+  $datastream = $collection->constructDatastream('COLLECTION_POLICY', 'M');
+  $datastream->mimetype = 'application/xml';
+  $datastream->label = 'Islandora Collection Policy';
+  $datastream->setContentFromFile("$mod_path/xml/collection_policy.xml", FALSE);
+  $collection->ingestDatastream($datastream);
+  $collection->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', 'islandora:root');
+
+  return array(
+    'islandora_video_redirect' => array(
+      'title' => t('Islandora Video Redirect'),
+      'objects' => array(
+        $collection,
+        $content_model,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_ingest_steos().
+ */
+function islandora_video_redirect_islandora_videoredirectcmodel_islandora_ingest_steps() {
+  $steps = array();
+
+  $steps['islandora_video_redirect_create_obj'] = array(
+    'type' => 'form',
+    'weight' => 10,
+    'form_id' => 'islandora_video_redirect_create_obj_form',
+    'module' => 'islandora_video_redirect',
+    'file' => 'includes/ingest_steps.inc',
+  );
+
+  return $steps;
+}
+
+/**
+ * Implements hook_CMODEL_PID_islandora_view_object().
+ */
+function islandora_video_redirect_islandora_videoredirectcmodel_islandora_view_object(AbstractObject $object) {
+  $output = array();
+
+  module_load_include('inc', 'islandora', 'includes/metadata');
+
+  $output['islandora_video_redirect_video'] = array(
+    '#type' => 'markup',
+    '#theme' => 'islandora_videojs',
+    '#params' => array(
+      'sources' => array(
+        array('url' => $object['OBJ']->url, 'mime' => $object['OBJ']->mimetype),
+      ),
+    ),
+    '#weight' => -1,
+  );
+  $output['islandora_video_redirect description'] = array(
+    '#type' => 'markup',
+    '#markup' => islandora_retrieve_description_markup($object),
+    '#weight' => 0,
+  );
+  $output['islandora_video_redirect metadata'] = array(
+    '#type' => 'markup',
+    '#markup' => islandora_retrieve_metadata_markup($object),
+    '#attached' => array(
+      'js' => array(
+        'misc/form.js',
+        'misc/collapse.js',
+      ),
+    ),
+    '#weight' => 1,
+  );
+  return $output;
+}
+
+/**
+ * Implements hook_xml_form_builder_forms().
+ */
+function islandora_video_redirect_xml_form_builder_forms() {
+  $mod_path = drupal_get_path('module', 'islandora_video_redirect');
+  $form = array();
+
+  $form[ISLANDORA_VIDEO_REDIRECT_FORM_NAME] = array(
+    'form_file' => "$mod_path/xml/mods_form.xml",
+  );
+
+  return $form;
+}
+
+/**
+ * Implements hook_xml_form_builder_form_associations().
+ */
+function islandora_video_redirect_xml_form_builder_form_associations() {
+  $association = array();
+
+  $association['islandora_video_redirect_default_form'] = array(
+    'content_model' => ISLANDORA_VIDEO_REDIRECT_CONTENT_MODEL,
+    'form_name' => ISLANDORA_VIDEO_REDIRECT_FORM_NAME,
+    'dsid' => 'MODS',
+    'title_field' => array('titleInfo', 'title'),
+    'transform' => 'mods_to_dc.xsl',
+    'template' => FALSE,
+  );
+
+  return $association;
+}
+
+/**
+ * Implements hook_file_mimetype_mapping_alter().
+ */
+function islandora_video_redirect_file_mimetype_mapping_alter(&$mapping) {
+  // @XXX: This may need to be expanded in the future.
+  $mapping['mimetypes'][] = 'application/x-mpegURL';
+  $mapping['extensions']['m3u8'] = array_search('application/x-mpegURL', $mapping['mimetypes']);
+}
