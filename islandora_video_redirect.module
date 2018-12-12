@@ -11,23 +11,6 @@ const ISLANDORA_VIDEO_REDIRECT_COLLECTION = 'islandora:videoRedirect';
 const ISLANDORA_VIDEO_REDIRECT_FORM_NAME = 'Islandora Video Redirect MODS Form';
 
 /**
- * Implements hook_menu().
- */
-function islandora_video_redirect_menu() {
-  $items = array();
-
-  $items['admin/islandora/solution_pack_config/video_redirect'] = array(
-    'title' => 'Video Redirect',
-    'descrption' => 'Configuration for rendering videos from external systems.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_video_redirect_admin_form'),
-    'access arguments' => array('administer site configuration'),
-  );
-
-  return $items;
-}
-
-/**
  * Implements hook_islandora_required_objects().
  */
 function islandora_video_redirect_islandora_required_objects(IslandoraTuque $connection) {
