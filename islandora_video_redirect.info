@@ -1,0 +1,7 @@
+name = Islandora Video Redirect
+description = "Provides a way to create objects with binaries stored in other external systems."
+package = Islandora
+core = 7.x
+dependencies[] = islandora
+dependencies[] = islandora_videojs
+dependencies[] = islandora_video
