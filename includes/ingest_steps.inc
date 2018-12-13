@@ -22,7 +22,7 @@ function islandora_video_redirect_create_obj_form(array $form, array &$form_stat
   $form['url'] = array(
     '#type' => 'textfield',
     '#title' => t('URL'),
-    '#description' => t('Location where to retrieve the binary content for the object.'),
+    '#description' => t('URL where the video can be found.'),
     '#required' => TRUE,
     '#element_validate' => array('islandora_video_redirect_validate_redirect_url'),
   );

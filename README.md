@@ -3,7 +3,7 @@
 ## Introduction
 
 Allows for a video file hosted in an external system to be rendered
-within Islandora and stored as part of an object.
+within Islandora and its location stored as part of an object.
 
 ## Requirements
 
