@@ -72,16 +72,27 @@ function islandora_video_redirect_islandora_videoredirectcmodel_islandora_view_o
 
   module_load_include('inc', 'islandora', 'includes/metadata');
 
-  $output['islandora_video_redirect_video'] = array(
-    '#type' => 'markup',
-    '#theme' => 'islandora_videojs',
-    '#params' => array(
+  if (isset($object['OBJ']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['OBJ'])) {
+    $params = array(
       'sources' => array(
-        array('url' => $object['OBJ']->url, 'mime' => $object['OBJ']->mimetype),
+        array(
+          'url' => $object['OBJ']->url,
+          'mime' => $object['OBJ']->mimetype,
+        ),
       ),
-    ),
-    '#weight' => -1,
-  );
+    );
+    if (isset($object['TN']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['TN'])) {
+      $params += array(
+        'tn' => url("islandora/object/{$object->id}/datastream/TN/view", array('absolute' => TRUE)),
+      );
+    }
+    $output['islandora_video_redirect_video'] = array(
+      '#type' => 'markup',
+      '#theme' => 'islandora_videojs',
+      '#params' => $params,
+      '#weight' => -1,
+    );
+  }
   $output['islandora_video_redirect description'] = array(
     '#type' => 'markup',
     '#markup' => islandora_retrieve_description_markup($object),
@@ -102,20 +113,6 @@ function islandora_video_redirect_islandora_videoredirectcmodel_islandora_view_o
 }
 
 /**
- * Implements hook_xml_form_builder_forms().
- */
-function islandora_video_redirect_xml_form_builder_forms() {
-  $mod_path = drupal_get_path('module', 'islandora_video_redirect');
-  $form = array();
-
-  $form[ISLANDORA_VIDEO_REDIRECT_FORM_NAME] = array(
-    'form_file' => "$mod_path/xml/mods_form.xml",
-  );
-
-  return $form;
-}
-
-/**
  * Implements hook_xml_form_builder_form_associations().
  */
 function islandora_video_redirect_xml_form_builder_form_associations() {
@@ -123,7 +120,7 @@ function islandora_video_redirect_xml_form_builder_form_associations() {
 
   $association['islandora_video_redirect_default_form'] = array(
     'content_model' => ISLANDORA_VIDEO_REDIRECT_CONTENT_MODEL,
-    'form_name' => ISLANDORA_VIDEO_REDIRECT_FORM_NAME,
+    'form_name' => 'Video MODS form',
     'dsid' => 'MODS',
     'title_field' => array('titleInfo', 'title'),
     'transform' => 'mods_to_dc.xsl',
@@ -140,4 +137,22 @@ function islandora_video_redirect_file_mimetype_mapping_alter(&$mapping) {
   // @XXX: This may need to be expanded in the future.
   $mapping['mimetypes'][] = 'application/x-mpegURL';
   $mapping['extensions']['m3u8'] = array_search('application/x-mpegURL', $mapping['mimetypes']);
+}
+
+/**
+ * Implements hook_islandora_CMODEL_PID_derivative().
+ */
+function islandora_video_redirect_islandora_videoredirectcmodel_islandora_derivative() {
+  $derivatives = array();
+  $derivatives[] = array(
+    'source_dsid' => 'OBJ',
+    'destination_dsid' => 'TN',
+    'weight' => '0',
+    'function' => array(
+      'islandora_video_create_thumbnail',
+    ),
+    'file' => drupal_get_path('module', 'islandora_video') . '/includes/derivatives.inc',
+  );
+
+  return $derivatives;
 }

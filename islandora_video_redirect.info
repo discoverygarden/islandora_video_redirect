@@ -4,3 +4,4 @@ package = Islandora
 core = 7.x
 dependencies[] = islandora
 dependencies[] = islandora_videojs
+dependencies[] = islandora_video
