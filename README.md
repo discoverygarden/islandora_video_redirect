@@ -11,6 +11,7 @@ This module requires the following modules/libraries:
 
 * [Islandora](https://github.com/islandora/islandora)
 * [Islandora Video.js](https://github.com/islandora/islandora_videojs)
+* [Islandora Video](https://github.com/islandora/islandora_solution_pack_video)
 
 ## Installation
 
