@@ -71,27 +71,32 @@ function islandora_video_redirect_islandora_videoredirectcmodel_islandora_view_o
   $output = array();
 
   module_load_include('inc', 'islandora', 'includes/metadata');
-
+  module_load_include('inc', 'islandora_video_redirect', 'includes/utilities');
   if (isset($object['OBJ']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['OBJ'])) {
-    $params = array(
-      'sources' => array(
-        array(
-          'url' => $object['OBJ']->url,
-          'mime' => $object['OBJ']->mimetype,
+    if ($oembed_data = islandora_video_redirect_retrieve_oembed_data($object['OBJ']->url)) {
+      $output['islandora_video_redirect_video']['#markup'] = $oembed_data['html'];
+    }
+    else {
+      $params = array(
+        'sources' => array(
+          array(
+            'url' => $object['OBJ']->url,
+            'mime' => $object['OBJ']->mimetype,
+          ),
         ),
-      ),
-    );
-    if (isset($object['TN']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['TN'])) {
-      $params += array(
-        'tn' => url("islandora/object/{$object->id}/datastream/TN/view", array('absolute' => TRUE)),
+      );
+      if (isset($object['TN']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $object['TN'])) {
+        $params += array(
+          'tn' => url("islandora/object/{$object->id}/datastream/TN/view", array('absolute' => TRUE)),
+        );
+      }
+      $output['islandora_video_redirect_video'] = array(
+        '#type' => 'markup',
+        '#theme' => 'islandora_videojs',
+        '#params' => $params,
+        '#weight' => -1,
       );
     }
-    $output['islandora_video_redirect_video'] = array(
-      '#type' => 'markup',
-      '#theme' => 'islandora_videojs',
-      '#params' => $params,
-      '#weight' => -1,
-    );
   }
   $output['islandora_video_redirect description'] = array(
     '#type' => 'markup',
