@@ -5,6 +5,9 @@
 Allows for a video file hosted in an external system to be rendered
 within Islandora and its location stored as part of an object.
 
+Embedding from external providers such as YouTube and Vimeo is supported and
+will be rendered in an iFrame.
+
 ## Requirements
 
 This module requires the following modules/libraries:
@@ -15,8 +18,8 @@ This module requires the following modules/libraries:
 
 ## Installation
 
-Install as usual, see 
-[this](https://drupal.org/documentation/install/modules-themes/modules-7) for 
+Install as usual, see
+[this](https://drupal.org/documentation/install/modules-themes/modules-7) for
 further information.
 
 ## Configuration
@@ -27,7 +30,7 @@ may be required.
 
 ## Troubleshooting/Issues
 
-Having problems or solved a problem? Contact 
+Having problems or solved a problem? Contact
 [discoverygarden](http://support.discoverygarden.ca).
 
 ## Maintainers/Sponsors
