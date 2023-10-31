@@ -20,7 +20,7 @@ function islandora_video_redirect_create_obj_form(array $form, array &$form_stat
   $form = array();
 
   $form['url'] = array(
-    '#type' => 'textfield',
+    '#type' => 'textarea',
     '#title' => t('URL'),
     '#description' => t('URL where the video can be found.'),
     '#required' => TRUE,
